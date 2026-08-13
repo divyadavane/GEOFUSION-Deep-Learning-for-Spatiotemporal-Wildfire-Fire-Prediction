@@ -42,7 +42,7 @@ def export_training_data():
             df = pd.DataFrame(columns=[
                 "grid_cell_id", "region", "cell_geom", "elevation_m", "slope_deg", "aspect_deg",
                 "land_cover_class", "fuel_type", "target_date", "temp_14d_avg", "humidity_14d_avg",
-                "wind_speed_14d_avg", "precip_14d_sum", "latest_imagery_path", "has_fire"
+                "wind_speed_14d_avg", "precip_14d_sum", "weather_14d_sequence", "latest_imagery_path", "has_fire"
             ])
         else:
             df = pd.DataFrame(data)

@@ -42,13 +42,13 @@ async def process_terrain(region: str, force: bool):
             
             for cell in batch:
                 wkt = cell.get("centroid", "")
-                if wkt.startswith("POINT"):
-                    try:
-                        coords = wkt.replace("POINT(", "").replace(")", "").split(" ")
-                        lon, lat = float(coords[0]), float(coords[1])
-                        tasks.append(fetch_elevation(client, lat, lon))
-                        valid_cells.append(cell["id"])
-                    except Exception as e:
+                try:
+                    import shapely.wkb
+                    pt = shapely.wkb.loads(bytes.fromhex(wkt))
+                    lon, lat = float(pt.x), float(pt.y)
+                    tasks.append(fetch_elevation(client, lat, lon))
+                    valid_cells.append(cell["id"])
+                except Exception as e:
                         logger.error(f"Error parsing WKT {wkt}: {e}")
                         continue
                         

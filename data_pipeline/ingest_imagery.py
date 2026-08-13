@@ -52,18 +52,17 @@ async def process_imagery(region: str, start_date: str, end_date: str):
             valid_cells = []
             
             for cell in batch:
-                wkt = cell.get("centroid", "")
-                if wkt.startswith("POINT"):
-                    try:
-                        coords = wkt.replace("POINT(", "").replace(")", "").split(" ")
-                        lon, lat = float(coords[0]), float(coords[1])
-                        # roughly 10km bbox around centroid
-                        bbox = [lon - 0.05, lat - 0.05, lon + 0.05, lat + 0.05]
-                        tasks.append(search_stac(client, bbox, start_date, end_date))
-                        valid_cells.append(cell["id"])
-                    except Exception as e:
-                        logger.error(f"Error parsing WKT {wkt}: {e}")
-                        continue
+                wkb_hex = cell.get("centroid", "")
+                try:
+                    pt = shapely.wkb.loads(bytes.fromhex(wkb_hex))
+                    lon, lat = float(pt.x), float(pt.y)
+                    # roughly 10km bbox around centroid
+                    bbox = [lon - 0.05, lat - 0.05, lon + 0.05, lat + 0.05]
+                    tasks.append(search_stac(client, bbox, start_date, end_date))
+                    valid_cells.append(cell["id"])
+                except Exception as e:
+                    logger.error(f"Error parsing WKB {wkb_hex}: {e}")
+                    continue
                         
             if not tasks:
                 continue

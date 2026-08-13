@@ -50,13 +50,13 @@ async def process_weather(region: str, start_date: str, end_date: str):
             for cell in batch:
                 # centroid is likely "POINT(-121.5 39.5)"
                 wkt = cell.get("centroid", "")
-                if wkt.startswith("POINT"):
-                    try:
-                        coords = wkt.replace("POINT(", "").replace(")", "").split(" ")
-                        lon, lat = float(coords[0]), float(coords[1])
-                        tasks.append(fetch_weather_for_cell(client, lat, lon, start_date, end_date))
-                        valid_cells.append(cell["id"])
-                    except Exception as e:
+                try:
+                    import shapely.wkb
+                    pt = shapely.wkb.loads(bytes.fromhex(wkt))
+                    lon, lat = float(pt.x), float(pt.y)
+                    tasks.append(fetch_weather_for_cell(client, lat, lon, start_date, end_date))
+                    valid_cells.append(cell["id"])
+                except Exception as e:
                         logger.error(f"Error parsing WKT {wkt}: {e}")
                         continue
                         
