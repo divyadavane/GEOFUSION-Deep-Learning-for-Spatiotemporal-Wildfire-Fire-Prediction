@@ -1,0 +1,23 @@
+artifact_path: file:D:/GEOFUSION- Multimodal Deep learning for Spatiotemporal wildfire
+  prediction and sattelile imagery anaysis/mlruns/1/models/m-b74cb1bd79724cadb1e9276fda7da14f/artifacts
+flavors:
+  python_function:
+    data: model.ubj
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.xgboost
+    python_version: 3.14.6
+  xgboost:
+    code: null
+    data: model.ubj
+    model_class: xgboost.sklearn.XGBClassifier
+    model_format: ubj
+    xgb_version: 3.4.0
+mlflow_version: 3.15.1
+model_id: m-b74cb1bd79724cadb1e9276fda7da14f
+model_size_bytes: 30806
+model_uuid: m-b74cb1bd79724cadb1e9276fda7da14f
+prompts: null
+run_id: 0c5a4debb7184801ab2c03bb605c4204
+utc_time_created: '2026-08-13 11:04:10.202035'

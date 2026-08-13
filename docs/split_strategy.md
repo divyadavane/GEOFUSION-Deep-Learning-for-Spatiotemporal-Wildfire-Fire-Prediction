@@ -7,4 +7,18 @@ To prevent data leakage, we employ a strict spatio-temporal holdout approach:
 - **Train Split**: All remaining data (first 80% of time, western 80% of space).
 
 ## Split Balances
-**DATASET EMPTY - Pipeline Blocked (Missing Phase 3 Export)**
+### TRAIN
+- Total Rows: 42960
+- Positive Fire Events: 0
+- Class Balance (Positive %): 0.00% if total > 0 else 0%
+
+### VAL
+- Total Rows: 8950
+- Positive Fire Events: 0
+- Class Balance (Positive %): 0.00% if total > 0 else 0%
+
+### TEST
+- Total Rows: 115698
+- Positive Fire Events: 205
+- Class Balance (Positive %): 0.18% if total > 0 else 0%
+

@@ -1,0 +1,2 @@
+Surrogate Model Test AUPRC: 1.0000 (No-skill: 0.0925)
+Surrogate Model Test AUROC: 1.0000

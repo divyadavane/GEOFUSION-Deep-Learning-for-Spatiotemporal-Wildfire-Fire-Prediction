@@ -14,7 +14,16 @@ async def fetch_weather_for_cell(client: httpx.AsyncClient, lat: float, lon: flo
         "longitude": lon,
         "start_date": start_date,
         "end_date": end_date,
-        "daily": ["temperature_2m_max", "temperature_2m_mean", "precipitation_sum", "wind_speed_10m_max", "wind_direction_10m_dominant"],
+        "daily": [
+            "temperature_2m_max",
+            "temperature_2m_mean",
+            "precipitation_sum",
+            "wind_speed_10m_max",
+            "wind_direction_10m_dominant",
+            "relative_humidity_2m_mean",
+            "soil_moisture_0_to_7cm_mean",
+            "wind_gusts_10m_max"
+        ],
         "timezone": "UTC"
     }
     
@@ -28,10 +37,6 @@ async def fetch_weather_for_cell(client: httpx.AsyncClient, lat: float, lon: flo
 
 async def process_weather(region: str, start_date: str, end_date: str):
     supabase = get_supabase_client()
-    # PostgREST allows querying PostGIS geometries as GeoJSON with a specific accept header, 
-    # but for simplicity, if centroid is WKT, we can extract it if we need, 
-    # but the easiest is just fetching the grid cells and extracting ST_X and ST_Y if we had a view.
-    # We will assume a helper RPC or we just parse the WKT "POINT(lon lat)" in Python.
     res = supabase.table("grid_cells").select("id, centroid").eq("region", region).execute()
     
     if not res.data:
@@ -48,7 +53,6 @@ async def process_weather(region: str, start_date: str, end_date: str):
             valid_cells = []
             
             for cell in batch:
-                # centroid is likely "POINT(-121.5 39.5)"
                 wkt = cell.get("centroid", "")
                 try:
                     import shapely.wkb
@@ -73,19 +77,23 @@ async def process_weather(region: str, start_date: str, end_date: str):
                     
                 daily = weather_data["daily"]
                 for i, date_str in enumerate(daily["time"]):
-                    # Handle None values from API gracefully
                     def _safe_float(val, default=0.0):
-                        return float(val) if val is not None else default
+                        if val is None:
+                            logger.warning(f"Null value found for cell {cell_id} on {date_str}. Using default.")
+                            return default
+                        return float(val)
                         
                     payload = {
                         "grid_cell_id": cell_id,
                         "ts": f"{date_str}T12:00:00Z",
-                        "temperature_c": _safe_float(daily["temperature_2m_mean"][i]),
-                        "humidity_pct": 50.0, # Not in basic free tier, mocking safe fallback
-                        "wind_speed_ms": _safe_float(daily["wind_speed_10m_max"][i]),
-                        "wind_dir_deg": _safe_float(daily["wind_direction_10m_dominant"][i]),
-                        "precip_mm": _safe_float(daily["precipitation_sum"][i]),
-                        "drought_index": 0.0, # Calculate if needed
+                        "temperature_c": _safe_float(daily.get("temperature_2m_mean", [])[i] if i < len(daily.get("temperature_2m_mean", [])) else None),
+                        "humidity_pct": _safe_float(daily.get("relative_humidity_2m_mean", [])[i] if i < len(daily.get("relative_humidity_2m_mean", [])) else None),
+                        "wind_speed_ms": _safe_float(daily.get("wind_speed_10m_max", [])[i] if i < len(daily.get("wind_speed_10m_max", [])) else None),
+                        "wind_dir_deg": _safe_float(daily.get("wind_direction_10m_dominant", [])[i] if i < len(daily.get("wind_direction_10m_dominant", [])) else None),
+                        "precip_mm": _safe_float(daily.get("precipitation_sum", [])[i] if i < len(daily.get("precipitation_sum", [])) else None),
+                        "wind_gusts_ms": _safe_float(daily.get("wind_gusts_10m_max", [])[i] if i < len(daily.get("wind_gusts_10m_max", [])) else None),
+                        "soil_moisture": _safe_float(daily.get("soil_moisture_0_to_7cm_mean", [])[i] if i < len(daily.get("soil_moisture_0_to_7cm_mean", [])) else None),
+                        "drought_index": _safe_float(daily.get("soil_moisture_0_to_7cm_mean", [])[i] if i < len(daily.get("soil_moisture_0_to_7cm_mean", [])) else None),
                         "source": "Open-Meteo ERA5"
                     }
                     upsert_payloads.append(payload)

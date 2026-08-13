@@ -1,0 +1,2 @@
+Total positive fire cells: 146
+Distinct fire events (spatially grouped): 146

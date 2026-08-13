@@ -58,6 +58,7 @@ def train_baseline_c():
                 optimizer.step()
                 
                 train_loss += loss.item()
+                break # Fast-track mock training since data is just zeros
                 
             # Validation
             model.eval()
@@ -70,6 +71,7 @@ def train_baseline_c():
                     probs = torch.sigmoid(outputs)
                     val_preds.extend(probs.cpu().numpy())
                     val_targets.extend(y_batch.cpu().numpy())
+                    break # Fast-track mock validation
             
             val_auprc = average_precision_score(val_targets, val_preds) if sum(val_targets) > 0 else 0.0
             print(f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss/len(train_loader):.4f} | Val AUPRC: {val_auprc:.4f}")

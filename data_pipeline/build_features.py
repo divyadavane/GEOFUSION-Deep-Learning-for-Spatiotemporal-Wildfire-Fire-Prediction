@@ -80,8 +80,8 @@ def build_features(input_parquet: str, output_parquet: str):
     # This is a modeling assumption (simplistic drought index proxy)
     
     def calc_proxy(row):
-        precip = row.get("precip_14d_sum", 0.0)
-        temp = row.get("temp_14d_avg", 0.0)
+        precip = float(row.get("precip_14d_sum", 0.0) or 0.0)
+        temp = float(row.get("temp_14d_avg", 0.0) or 0.0)
         
         if pd.isna(precip) or pd.isna(temp):
             return np.nan
@@ -93,6 +93,17 @@ def build_features(input_parquet: str, output_parquet: str):
         return precip / denominator
         
     df["fuel_moisture_proxy"] = df.apply(calc_proxy, axis=1)
+    
+    # 3. Weather sequence (real, from materialized view migration 14)
+    # The export now includes a real `weather_14d_sequence` JSONB column from the DB.
+    # We must NOT mock this — doing so would contaminate the LSTM baseline with fake sequences.
+    if "weather_14d_sequence" not in df.columns:
+        raise ValueError(
+            "Column 'weather_14d_sequence' is missing from the export. "
+            "This column is produced by migration 00000000000014_update_training_export_sequence.sql. "
+            "Re-run export_training_data.py against the refreshed materialized view."
+        )
+    print(f"  weather_14d_sequence present: {df['weather_14d_sequence'].notna().sum()} non-null rows")
     
     print(f"Writing augmented features to: {output_parquet}")
     os.makedirs(os.path.dirname(output_parquet), exist_ok=True)
