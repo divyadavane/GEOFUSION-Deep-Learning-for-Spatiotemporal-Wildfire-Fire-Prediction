@@ -100,7 +100,7 @@ async def process_fire_labels_async(region: str, start_date: str, end_date: str)
             t.acq_date,
             'NASA_FIRMS_VIIRS'
         FROM temp_firms t
-        JOIN grid_cells g ON ST_Contains(g.geom, ST_SetSRID(ST_MakePoint(t.lon, t.lat), 4326))
+        JOIN grid_cells g ON ST_Contains(g.cell_geom, ST_SetSRID(ST_MakePoint(t.lon, t.lat), 4326))
         WHERE g.region = %s
         ON CONFLICT DO NOTHING
         RETURNING id;

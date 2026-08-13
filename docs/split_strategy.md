@@ -8,17 +8,17 @@ To prevent data leakage, we employ a strict spatio-temporal holdout approach:
 
 ## Split Balances
 ### TRAIN
-- Total Rows: 42960
-- Positive Fire Events: 0
-- Class Balance (Positive %): 0.00% if total > 0 else 0%
+- Total Rows: 119930
+- Positive Fire Events: 441
+- Class Balance (Positive %): 0.37% if total > 0 else 0%
 
 ### VAL
-- Total Rows: 8950
-- Positive Fire Events: 0
-- Class Balance (Positive %): 0.00% if total > 0 else 0%
+- Total Rows: 1790
+- Positive Fire Events: 3
+- Class Balance (Positive %): 0.17% if total > 0 else 0%
 
 ### TEST
-- Total Rows: 115698
-- Positive Fire Events: 205
-- Class Balance (Positive %): 0.18% if total > 0 else 0%
+- Total Rows: 131376
+- Positive Fire Events: 488
+- Class Balance (Positive %): 0.37% if total > 0 else 0%
 

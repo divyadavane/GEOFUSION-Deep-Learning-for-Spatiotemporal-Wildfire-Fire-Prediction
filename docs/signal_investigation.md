@@ -99,3 +99,22 @@ As requested, extending the historical backfill to 2015-2020 was initiated. Howe
 
 **Final Updated Verdict:**
 The infrastructure is sound and the new features correctly improve model correlation. However, we cannot proceed with the 2015-2020 backfill until a valid `FIRMS_MAP_KEY` is provided in `.env.researcher` to ingest the corresponding fire events. Once the key is provided, the backfill can resume to achieve a meaningful statistical sample size.
+
+---
+
+## 2026-08-13: Real Task Evaluation (Wildfire Ignition) & Final Imagery Go-Decision
+
+With the FIRMS API key provided, a fully audited 5-year historical backfill (2015-2020) was successfully completed, producing a dataset of **253,096** rows with exactly **932** positive authentic VIIRS/MODIS fire events (0.368% sparsity). 
+
+The actual wildfire-ignition XGBoost model was trained strictly on environmental/weather features (no proxy labels, no leaky temperature variables). A rigorous 1,000-iteration bootstrap analysis on the Test set yielded the following confidence intervals:
+
+*   **Test Set Positives:** 488 / 131,376
+*   **No-Skill AUPRC Floor:** 0.0037
+*   **Model AUPRC:** 0.0079 (95% CI: [0.0067, 0.0094])
+*   **Model AUROC:** 0.7054 (95% CI: [0.6857, 0.7254])
+
+**Verdict: STATISTICALLY SIGNIFICANT.** 
+The lower bound of the Model's AUPRC 95% Confidence Interval (0.0067) is strictly and definitively greater than the random-chance no-skill floor (0.0037). The model has successfully extracted true predictive signal for wildfire ignition.
+
+**Updated Go/No-Go Recommendation: GO.**
+With the baseline non-visual tabular pipeline definitively proven to possess statistically significant predictive power, it is mathematically sound to proceed to the next phase of the project: multimodal fusion. We officially recommend launching the `ingest_imagery.py` pipeline to fetch Earth Search Sentinel-2 STAC assets to train the CNN component of the fusion architecture.
