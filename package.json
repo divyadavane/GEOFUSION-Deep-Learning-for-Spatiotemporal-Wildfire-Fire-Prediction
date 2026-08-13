@@ -1,0 +1,8 @@
+{
+  "name": "geofusion",
+  "version": "1.0.0",
+  "description": "GEOFUSION backend setup",
+  "scripts": {
+    "test:backend": "npx supabase start && npx supabase test db"
+  }
+}
