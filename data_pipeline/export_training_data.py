@@ -1,23 +1,16 @@
 import os
 import sys
 import pandas as pd
-from supabase import create_client
-
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://cxbnxqvpyansdabjteuv.supabase.co")
-SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "dummy")
-
-import os
-import sys
-import pandas as pd
 import psycopg2
 import json
 import datetime
+from pipeline_common import get_db_url
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY")
 
-# Hardcoding connection for this environment fix
-DB_URL = 'postgresql://postgres.cxbnxqvpyansdabjteuv:REDACTED_DB_PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres'
+# Connection built at runtime from SUPABASE_DB_PASSWORD (see pipeline_common.get_db_url)
+DB_URL = get_db_url()
 
 def export_training_data():
     print("Authenticating as researcher via direct DB session...")

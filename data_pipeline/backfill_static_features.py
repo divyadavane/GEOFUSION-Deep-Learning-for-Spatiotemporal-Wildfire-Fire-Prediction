@@ -11,8 +11,9 @@ Run this AFTER backfill_fire_cell_weather.py completes.
 import asyncio
 import httpx
 import psycopg2
+from pipeline_common import get_db_url
 
-DB_URL = 'postgresql://postgres.cxbnxqvpyansdabjteuv:REDACTED_DB_PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres'
+DB_URL = get_db_url()
 OPEN_METEO_ELEVATION_URL = "https://api.open-meteo.com/v1/elevation"
 
 # Open-Meteo elevation API supports batched queries (up to 100 coords at once)

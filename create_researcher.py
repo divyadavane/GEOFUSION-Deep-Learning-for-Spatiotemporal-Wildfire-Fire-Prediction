@@ -1,8 +1,12 @@
+import os
+import sys
 import psycopg2
 import uuid
 
-url = 'postgresql://postgres.cxbnxqvpyansdabjteuv:REDACTED_DB_PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres'
-conn = psycopg2.connect(url)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "data_pipeline"))
+from pipeline_common import get_db_url
+
+conn = psycopg2.connect(get_db_url())
 cur = conn.cursor()
 
 user_id = str(uuid.uuid4())

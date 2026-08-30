@@ -7,9 +7,9 @@ import os
 from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extras import execute_values
-from pipeline_common import PipelineRunLogger, logger
+from pipeline_common import PipelineRunLogger, get_db_url, logger
 
-DB_URL = os.environ.get("SUPABASE_DB_URL", "postgresql://postgres.cxbnxqvpyansdabjteuv:REDACTED_DB_PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres")
+DB_URL = get_db_url()
 
 async def search_stac(client: httpx.AsyncClient, bbox: list, target_date: str):
     # Earth Search AWS STAC API (Sentinel-2 L2A)

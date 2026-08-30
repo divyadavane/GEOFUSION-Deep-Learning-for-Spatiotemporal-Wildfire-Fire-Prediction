@@ -7,12 +7,12 @@ import asyncio
 import io
 import pandas as pd
 from datetime import datetime, timedelta
-from pipeline_common import PipelineRunLogger, get_supabase_client, logger
+from pipeline_common import PipelineRunLogger, get_supabase_client, get_db_url, logger
 import psycopg2
 from psycopg2.extras import execute_values
 
 FIRMS_MAP_KEY = os.environ.get("FIRMS_MAP_KEY")
-DB_URL = os.environ.get("SUPABASE_DB_URL", "postgresql://postgres.cxbnxqvpyansdabjteuv:REDACTED_DB_PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres")
+DB_URL = get_db_url()
 
 async def fetch_firms_chunk(client, start_date_str, days):
     # northern_california_pilot bbox: -124.0, 38.0, -120.0, 42.0

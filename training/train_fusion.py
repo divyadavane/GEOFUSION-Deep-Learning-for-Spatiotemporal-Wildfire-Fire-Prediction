@@ -85,7 +85,7 @@ def train_fusion():
             model.train()
             train_loss = 0.0
             n_batches = 0
-            for (tab, seq), y in train_loader:
+            for (tab, seq, _img), y in train_loader:
                 tab = tab.to(device)
                 seq = seq.to(device)
                 y   = y.to(device)
@@ -105,7 +105,7 @@ def train_fusion():
             model.eval()
             val_preds, val_targets = [], []
             with torch.no_grad():
-                for (tab, seq), y in val_loader:
+                for (tab, seq, _img), y in val_loader:
                     outputs = model(tab.to(device), seq.to(device))
                     probs = torch.sigmoid(outputs)
                     val_preds.extend(probs.cpu().numpy())
@@ -127,7 +127,7 @@ def train_fusion():
         model.eval()
         test_preds, test_targets = [], []
         with torch.no_grad():
-            for (tab, seq), y in test_loader:
+            for (tab, seq, _img), y in test_loader:
                 outputs = model(tab.to(device), seq.to(device))
                 probs = torch.sigmoid(outputs)
                 test_preds.extend(probs.cpu().numpy())

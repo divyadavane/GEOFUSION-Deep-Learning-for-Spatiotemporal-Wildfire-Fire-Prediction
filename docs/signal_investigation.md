@@ -102,19 +102,20 @@ The infrastructure is sound and the new features correctly improve model correla
 
 ---
 
-## 2026-08-13: Real Task Evaluation (Wildfire Ignition) & Final Imagery Go-Decision
+## 2026-08-13: Real Task Evaluation (Wildfire Ignition) — [RETRACTED / SUPERSEDED]
 
-With the FIRMS API key provided, a fully audited 5-year historical backfill (2015-2020) was successfully completed, producing a dataset of **253,096** rows with exactly **932** positive authentic VIIRS/MODIS fire events (0.368% sparsity). 
+> [!WARNING]
+> **FORMAL RETRACTION (2026-08-15):** The "GO" decision below was evaluated on an incomplete dataset where only 316 out of 2,512 authentic fire-event cells (<13%) possessed weather data. Because training on this truncated subset introduces severe geographic and selection bias, this evaluation and its "GO" recommendation are **FORMALLY RETRACTED**.
+>
+> **Audit Confirmation:**
+> - No model has been registered to the MLflow Production Model Registry based on this evaluation.
+> - Downstream multimodal fusion training scope has been halted pending full-population backfill.
+> - A complete 2015–2021 historical weather backfill for all 2,512 authentic fire-event cells (~5.61M rows) is being executed to enable an unbiased re-evaluation across the true full-population grid-days.
 
-The actual wildfire-ignition XGBoost model was trained strictly on environmental/weather features (no proxy labels, no leaky temperature variables). A rigorous 1,000-iteration bootstrap analysis on the Test set yielded the following confidence intervals:
-
-*   **Test Set Positives:** 488 / 131,376
+### Historical Evaluation (Retracted Baseline Context)
+*   **Test Set Positives (Subset):** 488 / 131,376
 *   **No-Skill AUPRC Floor:** 0.0037
-*   **Model AUPRC:** 0.0079 (95% CI: [0.0067, 0.0094])
-*   **Model AUROC:** 0.7054 (95% CI: [0.6857, 0.7254])
+*   **Subset Model AUPRC:** 0.0079 (95% CI: [0.0067, 0.0094])
+*   **Subset Model AUROC:** 0.7054 (95% CI: [0.6857, 0.7254])
 
-**Verdict: STATISTICALLY SIGNIFICANT.** 
-The lower bound of the Model's AUPRC 95% Confidence Interval (0.0067) is strictly and definitively greater than the random-chance no-skill floor (0.0037). The model has successfully extracted true predictive signal for wildfire ignition.
-
-**Updated Go/No-Go Recommendation: GO.**
-With the baseline non-visual tabular pipeline definitively proven to possess statistically significant predictive power, it is mathematically sound to proceed to the next phase of the project: multimodal fusion. We officially recommend launching the `ingest_imagery.py` pipeline to fetch Earth Search Sentinel-2 STAC assets to train the CNN component of the fusion architecture.
+**Status:** Superseded. Final Go/No-Go evaluation will be re-run on the unbiased, full-coverage 2015–2021 dataset after complete weather backfill.

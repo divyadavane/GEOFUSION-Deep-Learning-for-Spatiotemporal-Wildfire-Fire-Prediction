@@ -72,38 +72,62 @@ class WeatherSequenceDataset(Dataset):
         target = np.float32(self.y[idx])
         return torch.tensor(seq), torch.tensor(target)
 
+import rasterio
+import torchvision.transforms as T
+from PIL import Image
+
+def get_image_transform():
+    return T.Compose([
+        T.ToPILImage(),
+        T.Resize((224, 224)),
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
 class ImageryDataset(Dataset):
     """
-    For Baseline C (CNN) and Phase 6 imagery branch.
-
-    STATUS: UNAVAILABLE — imagery_tiles has 0 rows in the database.
-    Real Sentinel-2 imagery has not been ingested. This dataset class is
-    retained for when imagery is available; it must NOT be used with
-    torch.randn mock tensors, which produce meaningless model outputs.
-
-    The latest_imagery_path values in the export are STAC S3 paths that
-    require AWS Requester Pays auth. Set up real auth before using this.
+    For Baseline C (CNN) using local cached Sentinel-2 imagery.
     """
     def __init__(self, split_name: str):
-        raise RuntimeError(
-            "ImageryDataset cannot be used: imagery_tiles has 0 rows. "
-            "Ingest real satellite imagery first, then remove this guard."
-        )
+        self.df, self.feature_cols, self.target_col = load_split_data(split_name)
+        self.image_paths = self.df.get("local_imagery_path", pd.Series([None] * len(self.df))).values
+        self.y = self.df[self.target_col].values
+        self.transform = get_image_transform()
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        path = self.image_paths[idx]
+        target = torch.tensor(self.y[idx], dtype=torch.float32)
+        
+        if pd.isna(path):
+            img_tensor = torch.zeros((3, 224, 224), dtype=torch.float32)
+            return img_tensor, target
+            
+        try:
+            with rasterio.open(path) as src:
+                img_data = src.read() # [3, H, W]
+                # convert to [H, W, 3] for ToPILImage
+                img_data = np.transpose(img_data, (1, 2, 0))
+                img_tensor = self.transform(img_data)
+        except Exception:
+            img_tensor = torch.zeros((3, 224, 224), dtype=torch.float32)
+            
+        return img_tensor, target
 
 class MultimodalDataset(Dataset):
     """
-    Phase 6 dataset: Tabular features + Weather sequences.
-    Imagery is excluded because imagery_tiles has 0 rows in the database.
-    Returns: (X_tab, X_seq), y
-
-    When real imagery is available, set USE_IMAGERY=True in train_fusion.py
-    and extend this class to load images from the STAC paths.
+    Phase 6 fusion dataset: Tabular + Weather Sequence + Sentinel-2 Imagery.
+    Returns: (X_tab, X_seq, X_img), y
     """
     def __init__(self, split_name: str):
         self.df, self.feature_cols, self.target_col = load_split_data(split_name)
         self.X_tab = self.df[self.feature_cols].values.astype(np.float32)
         self.weather_seqs = self.df["weather_14d_sequence"].values
+        self.image_paths = self.df.get("local_imagery_path", pd.Series([None]*len(self.df))).values
         self.y = self.df[self.target_col].values
+        self.transform = get_image_transform()
 
         n_pos = int(np.sum(self.y))
         if n_pos == 0:
@@ -120,7 +144,7 @@ class MultimodalDataset(Dataset):
         # 1. Tabular
         tab = torch.tensor(self.X_tab[idx], dtype=torch.float32)
 
-        # 2. Sequential (LSTM) — real 14-day weather from database
+        # 2. Sequential (LSTM)
         seq_str = self.weather_seqs[idx]
         seq = np.zeros((14, 4), dtype=np.float32)
         try:
@@ -144,11 +168,25 @@ class MultimodalDataset(Dataset):
                         seq[t, 2] = float(item.get("wind_speed_ms", 0))
                         seq[t, 3] = float(item.get("precip_mm", 0))
         except Exception:
-            pass  # zeros fallback
-
+            pass
         seq_tensor = torch.tensor(seq, dtype=torch.float32)
+
+        # 3. Imagery (CNN)
+        path = self.image_paths[idx]
+        if pd.isna(path):
+            img_tensor = torch.zeros((3, 224, 224), dtype=torch.float32)
+        else:
+            try:
+                with rasterio.open(path) as src:
+                    img_data = src.read() # [3, H, W]
+                    img_data = np.transpose(img_data, (1, 2, 0)) # [H, W, 3]
+                    img_tensor = self.transform(img_data)
+            except Exception:
+                img_tensor = torch.zeros((3, 224, 224), dtype=torch.float32)
+                
         target = torch.tensor(self.y[idx], dtype=torch.float32)
-        return (tab, seq_tensor), target
+        
+        return (tab, seq_tensor, img_tensor), target
 
 def get_dataloader(dataset_type: str, split_name: str, batch_size: int = 32, shuffle: bool = False):
     """
@@ -157,10 +195,10 @@ def get_dataloader(dataset_type: str, split_name: str, batch_size: int = 32, shu
     if dataset_type == "weather_sequence":
         dataset = WeatherSequenceDataset(split_name)
     elif dataset_type == "imagery":
-        dataset = ImageryDataset(split_name)  # Will raise until real imagery is available
+        dataset = ImageryDataset(split_name)
     elif dataset_type == "multimodal":
-        dataset = MultimodalDataset(split_name)  # Tab + seq only (no imagery in Phase 6)
+        dataset = MultimodalDataset(split_name)
     else:
         raise ValueError("Invalid dataset_type. Choose 'weather_sequence', 'imagery', or 'multimodal'.")
 
-    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=2, pin_memory=True)

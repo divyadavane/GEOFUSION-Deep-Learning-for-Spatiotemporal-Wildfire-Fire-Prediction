@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "GEOFUSION backend setup",
   "scripts": {
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
     "test:backend": "npx supabase start && npx supabase test db"
   }
 }

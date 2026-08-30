@@ -1,0 +1,65 @@
+@import "tailwindcss";
+@import "maplibre-gl/dist/maplibre-gl.css";
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: #0a0a0a;
+  color: #ededed;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* ── GridMap Full Canvas Styling ──────────────────────────── */
+
+.grid-map-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 550px;
+  background-color: #121214;
+}
+
+.grid-map-wrapper .maplibregl-map {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.grid-map-wrapper .maplibregl-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  outline: none;
+}
+
+.grid-map-wrapper .maplibregl-ctrl-bottom-right {
+  bottom: 80px !important;
+  right: 16px !important;
+}
+
+.grid-map-wrapper .maplibregl-ctrl-attrib {
+  font-size: 9px;
+  opacity: 0.5;
+  background-color: rgba(10, 10, 10, 0.7) !important;
+  color: #a3a3a3 !important;
+}
+
+.grid-map-wrapper .maplibregl-ctrl-attrib a {
+  color: #a3a3a3 !important;
+}

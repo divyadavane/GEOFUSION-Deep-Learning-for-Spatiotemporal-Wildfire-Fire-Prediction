@@ -7,7 +7,7 @@ import numpy as np
 # Try to import rasterio, if not available we can't compute NDVI/NBR from STAC links
 try:
     import rasterio
-    RASTERIO_AVAILABLE = True
+    RASTERIO_AVAILABLE = False # Temporarily disabled to prevent network hanging
 except ImportError:
     RASTERIO_AVAILABLE = False
 

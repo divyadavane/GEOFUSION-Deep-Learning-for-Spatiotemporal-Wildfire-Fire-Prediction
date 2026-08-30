@@ -25,11 +25,11 @@ import argparse
 import mlflow
 import psycopg2
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data_pipeline"))
+from pipeline_common import get_db_url
 
-DB_URL = os.environ.get(
-    "SUPABASE_DB_URL",
-    "postgresql://postgres.cxbnxqvpyansdabjteuv:REDACTED_DB_PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
-)
+
+DB_URL = get_db_url()
 
 
 def push_model_from_mlflow(mlflow_run_id: str, version: str, architecture: str, is_active: bool = False):

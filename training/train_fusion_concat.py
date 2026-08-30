@@ -57,7 +57,7 @@ def train_fusion_concat():
             model.train()
             train_loss = 0.0
             n_batches = 0
-            for (tab, seq), y in train_loader:
+            for (tab, seq, img), y in train_loader:
                 tab = tab.to(device)
                 seq = seq.to(device)
                 y   = y.to(device)
@@ -76,7 +76,7 @@ def train_fusion_concat():
             model.eval()
             val_preds, val_targets = [], []
             with torch.no_grad():
-                for (tab, seq), y in val_loader:
+                for (tab, seq, img), y in val_loader:
                     outputs = model(tab.to(device), seq.to(device))
                     probs = torch.sigmoid(outputs)
                     val_preds.extend(probs.cpu().numpy())
@@ -95,7 +95,7 @@ def train_fusion_concat():
         model.eval()
         test_preds, test_targets = [], []
         with torch.no_grad():
-            for (tab, seq), y in test_loader:
+            for (tab, seq, img), y in test_loader:
                 outputs = model(tab.to(device), seq.to(device))
                 probs = torch.sigmoid(outputs)
                 test_preds.extend(probs.cpu().numpy())
@@ -105,10 +105,26 @@ def train_fusion_concat():
             auprc = average_precision_score(test_targets, test_preds)
             auroc = roc_auc_score(test_targets, test_preds)
             brier = brier_score_loss(test_targets, test_preds)
+            
+            import numpy as np
+            n_bootstraps = 1000
+            rng = np.random.RandomState(42)
+            bootstrapped_auprc = []
+            bootstrapped_auroc = []
+            for i in range(n_bootstraps):
+                indices = rng.randint(0, len(test_preds), len(test_preds))
+                if len(np.unique(np.array(test_targets)[indices])) < 2:
+                    continue
+                bootstrapped_auprc.append(average_precision_score(np.array(test_targets)[indices], np.array(test_preds)[indices]))
+                bootstrapped_auroc.append(roc_auc_score(np.array(test_targets)[indices], np.array(test_preds)[indices]))
+                
+            auprc_ci = (np.percentile(bootstrapped_auprc, 2.5), np.percentile(bootstrapped_auprc, 97.5)) if bootstrapped_auprc else (0,0)
+            auroc_ci = (np.percentile(bootstrapped_auroc, 2.5), np.percentile(bootstrapped_auroc, 97.5)) if bootstrapped_auroc else (0,0)
+            print(f"Test AUPRC: {auprc:.4f} (95% CI: {auprc_ci[0]:.4f}-{auprc_ci[1]:.4f}) | Test AUROC: {auroc:.4f} (95% CI: {auroc_ci[0]:.4f}-{auroc_ci[1]:.4f}) | Test Brier: {brier:.4f}")
         else:
             auprc = auroc = brier = 0.0
+            print(f"Test AUPRC: {auprc:.4f} | Test AUROC: {auroc:.4f} | Test Brier: {brier:.4f}")
 
-        print(f"Test AUPRC: {auprc:.4f} | Test AUROC: {auroc:.4f} | Test Brier: {brier:.4f}")
         mlflow.log_metrics({"test_auprc": auprc, "test_auroc": auroc, "test_brier": brier})
 
 if __name__ == "__main__":

@@ -12,6 +12,30 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def get_db_url(port: str | None = None) -> str:
+    """Build the Postgres connection string from environment variables.
+
+    The password is ALWAYS read from the SUPABASE_DB_PASSWORD environment
+    variable at runtime. Never hardcode a password; if the variable is unset
+    the caller gets a clear error instead of a connection to a guessed URL.
+
+    `port` overrides the default port for callers that need a specific pooler
+    mode (e.g. session mode on 5432 instead of transaction mode on 6543). An
+    explicit SUPABASE_DB_PORT env var always wins.
+    """
+    password = os.environ.get("SUPABASE_DB_PASSWORD")
+    if not password:
+        raise ValueError(
+            "SUPABASE_DB_PASSWORD is not set in the environment. "
+            "Set it (e.g. in your shell) before running scripts that connect to Postgres."
+        )
+    user = os.environ.get("SUPABASE_DB_USER", "postgres.cxbnxqvpyansdabjteuv")
+    host = os.environ.get("SUPABASE_DB_HOST", "aws-0-ap-southeast-1.pooler.supabase.com")
+    port = os.environ.get("SUPABASE_DB_PORT") or port or "6543"
+    dbname = os.environ.get("SUPABASE_DB_NAME", "postgres")
+    from urllib.parse import quote
+    return f"postgresql://{user}:{quote(password, safe='')}@{host}:{port}/{dbname}"
+
 def get_supabase_client() -> Client:
     url = os.environ.get("SUPABASE_URL")
     key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")

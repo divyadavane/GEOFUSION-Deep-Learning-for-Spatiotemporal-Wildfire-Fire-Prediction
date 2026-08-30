@@ -2,8 +2,9 @@ import asyncio
 import httpx
 import psycopg2
 from psycopg2.extras import execute_values
+from pipeline_common import get_db_url
 
-DB_URL = 'postgresql://postgres.cxbnxqvpyansdabjteuv:REDACTED_DB_PASSWORD@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres'
+DB_URL = get_db_url()
 OPEN_METEO_URL = "https://archive-api.open-meteo.com/v1/archive"
 
 # Date range matching the fire_events backfill window (2021-01-01 to 2021-12-31)
