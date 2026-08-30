@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { Navbar } from '@/components/Navbar';
+import { WildfireChatbot } from '@/components/WildfireChatbot';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,6 +31,7 @@ export default function RootLayout({
         <AuthProvider>
           <Navbar />
           <main className="flex-1 flex flex-col">{children}</main>
+          <WildfireChatbot />
           <footer className="w-full border-t border-neutral-900 bg-neutral-950 py-4 px-6 text-center text-xs text-neutral-600 font-mono">
             GEOFUSION • Multimodal Spatiotemporal Deep Learning • Sentinel-2 + ERA5 + NASA FIRMS
           </footer>

@@ -7,7 +7,7 @@ import { MapboxOverlay, type MapboxOverlayProps } from '@deck.gl/mapbox';
 import { GeoJsonLayer } from '@deck.gl/layers';
 import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import Link from 'next/link';
-import { RiskControlBar, computeForecastHorizon, type LastRealtimeEvent, type SavedRegionOption } from './RiskControlBar';
+import { RiskControlBar, computeForecastHorizon, type LastRealtimeEvent, type SavedRegionOption, type BackendRegionOption } from './RiskControlBar';
 import { RiskLegend } from './RiskLegend';
 import { SaveRegionModal } from './SaveRegionModal';
 import type { RiskHeatmapResponse } from '@/app/api/risk-heatmap/route';
@@ -48,6 +48,30 @@ const REGION_VIEWPORTS: Record<
     center: [-118.5, 33.8],
     zoom: 7.6,
     bbox: [-120.5, 32.5, -116.5, 35.0],
+  },
+  pacific_northwest: {
+    name: 'Pacific Northwest Cascades',
+    center: [-122.5, 45.5],
+    zoom: 6.8,
+    bbox: [-124.5, 43.5, -120.5, 47.5],
+  },
+  colorado_rockies: {
+    name: 'Colorado Rocky Mountains',
+    center: [-106.0, 39.5],
+    zoom: 7.4,
+    bbox: [-107.5, 38.0, -104.5, 41.0],
+  },
+  arizona_southwest: {
+    name: 'Arizona & Southwest Forests',
+    center: [-111.5, 35.0],
+    zoom: 7.2,
+    bbox: [-113.5, 33.5, -109.5, 36.5],
+  },
+  mediterranean_basin: {
+    name: 'Mediterranean Wildfire Pilot',
+    center: [22.25, 38.5],
+    zoom: 7.0,
+    bbox: [20.0, 36.5, 24.5, 40.5],
   },
 };
 
@@ -244,10 +268,33 @@ export function GridMap() {
   // Hover tooltip state
   const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
 
-  // Fetch user's saved regions on mount to populate the Region / Place dropdown
+  // Dynamic backend available regions state (data-driven)
+  const [availableRegions, setAvailableRegions] = useState<BackendRegionOption[]>([
+    {
+      region_id: 'northern_california_pilot',
+      name: 'Northern California Pilot',
+      cell_count: 3200,
+    },
+  ]);
+
+  // Fetch available regions and user's saved regions on mount
   useEffect(() => {
-    async function loadSaved() {
+    async function loadRegions() {
       try {
+        // 1. Fetch data-driven backend regions from database
+        const res = await fetch('/api/available-regions');
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            setAvailableRegions(list);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load available backend regions:', err);
+      }
+
+      try {
+        // 2. Fetch authenticated user's saved custom AOIs
         const { data } = await supabase
           .from('saved_regions')
           .select('id, name, bbox')
@@ -260,7 +307,7 @@ export function GridMap() {
         console.warn('Failed to load saved regions for dropdown:', err);
       }
     }
-    loadSaved();
+    loadRegions();
   }, []);
 
   // Compute active target viewport based on selected region
@@ -786,6 +833,7 @@ export function GridMap() {
             isLiveStreaming={isLiveStreaming}
             onToggleLiveStream={() => setIsLiveStreaming((s) => !s)}
             onTriggerLiveEvent={() => triggerSingleLiveUpdate('Manual Live Ingestion Trigger')}
+            availableRegions={availableRegions}
             savedRegions={savedRegionsList}
           />
         </div>
@@ -957,9 +1005,14 @@ export function GridMap() {
             <p className="text-xs text-neutral-400">No prediction score loaded</p>
           )}
 
-          <div className="mt-3 pt-2 border-t border-neutral-800 text-xs text-indigo-400 font-medium flex items-center justify-between">
-            <span>Click cell to inspect</span>
-            <span>→</span>
+          <div className="mt-3 pt-2 border-t border-neutral-800 text-xs flex items-center justify-between">
+            <span className="text-indigo-400 font-medium">Click cell to inspect →</span>
+            <Link
+              href="/about"
+              className="text-[10px] text-amber-300 hover:text-amber-200 underline font-mono"
+            >
+              📖 Methodology
+            </Link>
           </div>
         </div>
       )}

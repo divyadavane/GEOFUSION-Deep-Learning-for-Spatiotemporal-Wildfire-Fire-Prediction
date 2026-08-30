@@ -72,9 +72,17 @@ class WeatherSequenceDataset(Dataset):
         target = np.float32(self.y[idx])
         return torch.tensor(seq), torch.tensor(target)
 
-import rasterio
-import torchvision.transforms as T
-from PIL import Image
+try:
+    import rasterio
+except ImportError:
+    rasterio = None
+
+try:
+    import torchvision.transforms as T
+    from PIL import Image
+except ImportError:
+    T = None
+    Image = None
 
 def get_image_transform():
     return T.Compose([

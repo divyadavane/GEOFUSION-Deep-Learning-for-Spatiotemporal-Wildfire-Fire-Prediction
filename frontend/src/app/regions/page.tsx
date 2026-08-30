@@ -501,6 +501,15 @@ export default function SavedRegionsPage() {
                           {summary.elevatedCount} Cells
                         </span>
                       </div>
+                      <div className="pt-1 border-t border-neutral-850">
+                        <Link
+                          href="/about"
+                          className="text-[10px] text-amber-300 hover:text-amber-200 underline underline-offset-2 flex items-center gap-1 transition"
+                        >
+                          <span>📖 Methodology Info</span>
+                          <span aria-hidden="true">→</span>
+                        </Link>
+                      </div>
                     </div>
 
                     {/* Direct Redirect to Custom Grid Map View */}

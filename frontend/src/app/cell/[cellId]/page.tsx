@@ -310,6 +310,14 @@ export default async function CellDrillDownPage({ params, searchParams }: CellPa
                 95% CI Range: [{confLow.toFixed(3)} – {confHigh.toFixed(3)}]
               </p>
             </div>
+
+            <Link
+              href="/about"
+              className="mt-3 text-[11px] font-mono font-bold text-amber-300 hover:text-amber-200 underline underline-offset-4 flex items-center gap-1 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-amber-400"
+            >
+              <span>📖 Methodology & Limits</span>
+              <span aria-hidden="true">→</span>
+            </Link>
           </div>
         </div>
 

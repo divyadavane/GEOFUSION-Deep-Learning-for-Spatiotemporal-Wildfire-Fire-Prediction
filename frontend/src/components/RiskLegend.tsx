@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 
 export interface RiskBandDefinition {
   range: string;
@@ -213,9 +214,20 @@ export function RiskLegend({ metrics, totalCells, loading, onSelectNextDay }: Ri
       )}
 
       {/* Calibration & Class Imbalance Scientific Disclaimer Note */}
-      <div className="p-2.5 rounded-xl bg-neutral-950/70 border border-neutral-800 text-[11px] text-neutral-300 leading-relaxed font-mono">
-        <span className="text-amber-400 font-bold">Calibration Context: </span>
-        Due to extreme natural fire imbalance (~0.18% base incidence rate), scores represent relative percentile ranking across the pilot domain rather than absolute uncalibrated event probabilities.
+      <div className="p-2.5 rounded-xl bg-neutral-950/70 border border-neutral-800 text-[11px] text-neutral-300 leading-relaxed font-mono space-y-1.5">
+        <div>
+          <span className="text-amber-400 font-bold">Calibration Context: </span>
+          Due to extreme natural fire imbalance (~0.18% base incidence rate), scores represent relative percentile ranking across the pilot domain rather than absolute uncalibrated event probabilities.
+        </div>
+        <div className="pt-1 border-t border-neutral-800/80">
+          <Link
+            href="/about"
+            className="text-[11px] font-mono font-bold text-amber-300 hover:text-amber-200 underline underline-offset-4 flex items-center gap-1 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-amber-400"
+          >
+            <span>📖 Understand Risk Scores & Methodology</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
       </div>
 
       {/* Summary Metrics Row */}

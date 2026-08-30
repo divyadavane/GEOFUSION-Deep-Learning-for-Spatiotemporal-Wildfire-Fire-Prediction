@@ -38,6 +38,38 @@ export const REGION_CONFIGS: Record<
     center: [-118.5, 33.8],
     zoom: 7.6,
   },
+  pacific_northwest: {
+    name: 'Pacific Northwest Cascades',
+    bbox: [-124.5, 43.5, -120.5, 47.5],
+    cols: 40,
+    rows: 40,
+    center: [-122.5, 45.5],
+    zoom: 6.8,
+  },
+  colorado_rockies: {
+    name: 'Colorado Rocky Mountains',
+    bbox: [-107.5, 38.0, -104.5, 41.0],
+    cols: 40,
+    rows: 40,
+    center: [-106.0, 39.5],
+    zoom: 7.4,
+  },
+  arizona_southwest: {
+    name: 'Arizona & Southwest Forests',
+    bbox: [-113.5, 33.5, -109.5, 36.5],
+    cols: 40,
+    rows: 30,
+    center: [-111.5, 35.0],
+    zoom: 7.2,
+  },
+  mediterranean_basin: {
+    name: 'Mediterranean Wildfire Pilot',
+    bbox: [20.0, 36.5, 24.5, 40.5],
+    cols: 40,
+    rows: 40,
+    center: [22.25, 38.5],
+    zoom: 7.0,
+  },
 };
 
 /**

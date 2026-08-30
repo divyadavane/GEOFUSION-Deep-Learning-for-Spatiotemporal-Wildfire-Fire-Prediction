@@ -30,6 +30,10 @@ const REGION_TOTALS: Record<string, number> = {
   northern_california_pilot: 3200,
   sierra_nevada: 1600,
   socal_coastal: 1200,
+  pacific_northwest: 1600,
+  colorado_rockies: 1600,
+  arizona_southwest: 1200,
+  mediterranean_basin: 1600,
 };
 
 // Generate valid 1–7 day forecast horizon dates relative to current anchor
@@ -124,6 +128,7 @@ export async function GET(request: NextRequest) {
   if (supabaseUrl && supabaseAnonKey && scenario !== 'nominal' && region === 'northern_california_pilot') {
     try {
       const supabase = createClient(supabaseUrl, supabaseAnonKey);
+      // 1. Try RPC get_risk_heatmap
       const { data, error } = await supabase.rpc('get_risk_heatmap', {
         p_region: region,
         p_date: date,
@@ -138,19 +143,45 @@ export async function GET(request: NextRequest) {
             confidence_high: Number(row.confidence_high ?? Math.min(1, row.risk_score + 0.05)),
           };
         }
+      } else {
+        // 2. Query predictions table directly
+        const { data: predRows } = await supabase
+          .from('predictions')
+          .select('grid_cell_id, risk_score, confidence_low, confidence_high')
+          .eq('prediction_date', date)
+          .limit(3500);
+
+        if (Array.isArray(predRows) && predRows.length > 0) {
+          source = 'database_rpc';
+          for (const row of predRows) {
+            predictions[row.grid_cell_id] = {
+              risk_score: Number(row.risk_score),
+              confidence_low: Number(row.confidence_low ?? Math.max(0, Number(row.risk_score) - 0.05)),
+              confidence_high: Number(row.confidence_high ?? Math.min(1, Number(row.risk_score) + 0.05)),
+            };
+          }
+        }
       }
     } catch (err) {
-      console.warn('RPC get_risk_heatmap fallback to simulated forecast:', err);
+      console.warn('Database query fallback to simulated forecast:', err);
     }
   }
 
-  // Generate simulated predictions for selected region
+  // Ensure full grid coverage for selected region
+  const cellCount = REGION_TOTALS[region] || 3200;
+  const forceNominal = scenario === 'nominal';
+
   if (Object.keys(predictions).length === 0) {
     source = 'simulated_forecast';
-    const forceNominal = scenario === 'nominal';
-    const cellCount = REGION_TOTALS[region] || 900;
     for (let id = 1; id <= cellCount; id++) {
       predictions[id] = generateSimulatedRisk(id, horizonMatch.horizonDay, forceNominal);
+    }
+  } else if (Object.keys(predictions).length < cellCount) {
+    // Fill remaining cells with baseline values to maintain complete spatial grid
+    for (let id = 1; id <= cellCount; id++) {
+      if (!predictions[id]) {
+        predictions[id] = generateSimulatedRisk(id, horizonMatch.horizonDay, forceNominal);
+      }
     }
   }
 

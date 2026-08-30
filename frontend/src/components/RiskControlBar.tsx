@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 
 export interface HorizonDayOption {
   dateStr: string;
@@ -38,6 +39,13 @@ export interface LastRealtimeEvent {
   reason?: string;
 }
 
+export interface BackendRegionOption {
+  region_id: string;
+  name: string;
+  cell_count: number;
+  extent_wkt?: string;
+}
+
 export interface SavedRegionOption {
   id: string;
   name: string;
@@ -59,6 +67,7 @@ interface RiskControlBarProps {
   isLiveStreaming?: boolean;
   onToggleLiveStream?: () => void;
   onTriggerLiveEvent?: () => void;
+  availableRegions?: BackendRegionOption[];
   savedRegions?: SavedRegionOption[];
 }
 
@@ -77,6 +86,13 @@ export function RiskControlBar({
   isLiveStreaming = true,
   onToggleLiveStream,
   onTriggerLiveEvent,
+  availableRegions = [
+    {
+      region_id: 'northern_california_pilot',
+      name: 'Northern California Pilot',
+      cell_count: 3200,
+    },
+  ],
   savedRegions = [],
 }: RiskControlBarProps) {
   const minDate = horizonDays[0]?.dateStr;
@@ -107,10 +123,13 @@ export function RiskControlBar({
               onChange={(e) => onRegionChange(e.target.value)}
               className="w-full bg-neutral-950 border border-neutral-700 hover:border-neutral-600 focus:border-amber-400 rounded-xl px-3.5 py-2 text-xs sm:text-sm font-bold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 cursor-pointer shadow-inner appearance-none pr-8 transition"
             >
-              <optgroup label="Standard Pilot Regions">
-                <option value="northern_california_pilot">🌲 Northern California Pilot (3,200 Cells)</option>
-                <option value="sierra_nevada">⛰️ Sierra Nevada Foothills (1,600 Cells)</option>
-                <option value="socal_coastal">🌊 Southern California Coastal (1,200 Cells)</option>
+              {/* Dynamic Database-Driven Available Regions */}
+              <optgroup label="Available Backend Regions (Database-Driven)">
+                {availableRegions.map((r) => (
+                  <option key={r.region_id} value={r.region_id}>
+                    🌲 {r.name} ({r.cell_count.toLocaleString()} Cells)
+                  </option>
+                ))}
               </optgroup>
 
               {savedRegions.length > 0 && (
@@ -257,7 +276,7 @@ export function RiskControlBar({
 
       {/* Bottom Footer Row: Provenance & Date Picker */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-neutral-800/80 text-xs font-mono text-neutral-400">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span>Backend Source:</span>
           {source === 'database_rpc' ? (
             <span className="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold flex items-center gap-1">
@@ -270,6 +289,12 @@ export function RiskControlBar({
               <span>Simulated Spatiotemporal Model</span>
             </span>
           )}
+          <Link
+            href="/about"
+            className="text-[11px] text-amber-300 hover:text-amber-200 underline underline-offset-2 ml-1"
+          >
+            📖 Methodology & Uncertainty Limits
+          </Link>
         </div>
 
         <div className="flex items-center gap-2">
