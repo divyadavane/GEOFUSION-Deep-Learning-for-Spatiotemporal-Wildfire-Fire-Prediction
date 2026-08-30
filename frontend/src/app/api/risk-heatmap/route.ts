@@ -117,8 +117,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cxbnxqvpyansdabjteuv.supabase.co';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4Ym54cXZweWFuc2RhYmp0ZXV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2MDI3MDcsImV4cCI6MjEwMjE3ODcwN30._nnU1nvmUjU3PciNZZhTxAyUA7tz-GvRcX6fsgW_exs';
 
   const rpcSignature = `get_risk_heatmap(p_region: "${region}", p_date: "${date}")`;
 
