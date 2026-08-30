@@ -58,6 +58,12 @@
 - **Interactive SVG Thumbnails**: Mini spatial previews showing region bounds relative to the California pilot domain.
 - **In-Place Management**: Instant inline rename and delete with confirmation modals without full-page reloads.
 
+## Live Production Deployment
+
+- **Primary Web App:** **[https://geofusion-ai.vercel.app](https://geofusion-ai.vercel.app)**
+- **Alternative Mirror:** **[https://geofusion-app.vercel.app](https://geofusion-app.vercel.app)**
+- **Wildfire Portal:** **[https://geofusion-wildfire.vercel.app](https://geofusion-wildfire.vercel.app)**
+
 ### 4. Active Model Provenance Card (`/about`)
 - **Database RPC Verification**: Directly queries `get_active_model()` RPC.
 - **Headline Validation Metrics**: Displays **AUPRC**, **AUROC**, and **Brier Score** with **95% Confidence Intervals** and exact evaluation sample sizes ($n=20,020\text{ test cell-days}$).
